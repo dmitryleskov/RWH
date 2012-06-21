@@ -27,15 +27,33 @@ isPal (x:xs) = scan (x:xs) xs [x]
    and the second parameter contains the first half reversed, 
    hence they can be directly compared.
    
+   Note: The exercise does not state whether palindromes 
+   of odd length are permitted.
+
    isPal1 only returns True for palindromes of even length, and [].
-   The spec in the book is not clear enough.
+   isPal2 handles both "even" and "odd" palindromes.
+   
+   As expected, it is faster than the isPal0 naive implementation
+   when compiled, and uses less memory.
 --}
 
 isPal1 :: Eq a => [a] -> Bool
 isPal1 list = scan list [] list
                 where 
                   scan   tail revHead         [] = tail == revHead
-                  scan    _         _     (_:[]) = False
+                  scan      _       _     (_:[]) = False
+                  scan (x:xs) revHead (p0:p1:ps) = scan xs (x:revHead) ps
+                  
+isPal2 list = scan list [] list
+                where 
+                  scan   tail revHead         [] = tail == revHead
+                  scan (x:xs) revHead     (_:[]) = xs   == revHead
                   scan (x:xs) revHead (p0:p1:ps) = scan xs (x:revHead) ps
                   
 
+main = do
+--    args <- getArgs
+    print $ show $ isPal2 ([1..5000000]++[5000000,4999999..1])
+     
+    
+        
