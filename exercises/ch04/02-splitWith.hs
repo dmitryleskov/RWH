@@ -27,3 +27,24 @@ splitWith p xs = let (first,rest) = splitOne p (skip p xs)
                    skip p (x:xs) = if p x 
                                    then x:xs
                                    else skip p xs
+
+-- Variation with 2-in-1 aux function
+
+splitWith1 :: (a -> Bool) -> [a] -> [[a]]
+splitWith1 _ [] = []
+splitWith1 p xs = let (first,rest) = splitOne p True xs
+                   in if null first
+                      then []
+                      else first : (splitWith p rest)
+                  where  
+                        -- The second parameter means 
+                        -- "drop or stop when predicate returns false"
+                        splitOne :: (a -> Bool) -> Bool -> [a] -> ([a],[a])
+                        splitOne _ _    []     = ([],[])
+                        splitOne p skip (x:xs) = 
+                            if p x
+                            then let (suffix,rest) = splitOne p False xs
+                                  in (x:suffix,rest)
+                            else if skip 
+                                 then splitOne p True xs
+                                 else ([],xs)
