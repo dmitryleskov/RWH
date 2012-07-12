@@ -7,20 +7,23 @@
 
 splitWith :: (a -> Bool) -> [a] -> [[a]]
 splitWith _ [] = []
-splitWith p xs = if null y
-                 then []
-                 else y : (splitWith p ys)
+splitWith p xs = let (first,rest) = splitOne p (skip p xs)
+                  in if null first
+                     then []
+                     else first : (splitWith p rest)
                  where 
-                   (y,ys) = splitOne p (skip p xs)
-
-splitOne :: (a -> Bool) -> [a] -> ([a],[a])
-splitOne p [] = ([],[])
-splitOne p (x:xs) = if p x
-                    then (x:ys,zs)
-                    else ([],x:xs)
-                    where (ys,zs) = splitOne p xs
-skip :: (a -> Bool) -> [a] -> [a]
-skip p [] = []
-skip p (x:xs) = if p x 
-                then x:xs
-                else skip p xs
+                   -- Takes elements while the predicate returns True,
+                   -- then drops while the predicate returns False.
+                   -- Returns tuple (taken elements, remaining elements)
+                   splitOne :: (a -> Bool) -> [a] -> ([a],[a])
+                   splitOne p [] = ([],[])
+                   splitOne p (x:xs) = if p x
+                                       then (x:ys,rest)
+                                       else ([], skip p xs)
+                                       where (ys,rest) = splitOne p xs
+                   -- Drops list elements while predicate returns False
+                   skip :: (a -> Bool) -> [a] -> [a]
+                   skip p [] = []
+                   skip p (x:xs) = if p x 
+                                   then x:xs
+                                   else skip p xs
