@@ -1,3 +1,4 @@
+{-
 import System.Environment (getArgs)
 
 interactWith function inputFile outputFile = do
@@ -11,15 +12,16 @@ main = mainWith myFunction
             [input,output] -> interactWith function input output
             _ -> putStrLn "error: exactly two arguments needed"
                                                   
-myFunction = transpose
+myFunction = id --transpose
+-}
 
 transpose :: String -> String
 transpose text = unlines (scan (lines text) [])
 
 scan lines rows = if noMore lines
                   then rows
-                  else scan l (rows ++ [r])
-                  where (r, l) = getRow lines
+                  else scan tails (rows ++ [row])
+                  where (row, tails) = getRow lines
                         noMore [] = True
                         noMore (l:ls) = if null l 
                                         then noMore ls
@@ -28,8 +30,11 @@ scan lines rows = if noMore lines
 getRow :: [String] -> (String, [String])
 getRow []           = ("", [])
 getRow (line:lines) = let (h,t) = decapitate line
-                       in (h : hs, t : ts)
-  where (hs, ts) = getRow lines
+                          (hs, ts) = getRow lines
+                       in (h : hs, if null t && null ts
+                                   then []
+                                   else t : ts) 
+  where 
         decapitate line = if null line 
                           then (' ', "") 
                           else (head line, tail line)
