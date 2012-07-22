@@ -1,4 +1,4 @@
-{-
+
 import System.Environment (getArgs)
 
 interactWith function inputFile outputFile = do
@@ -12,29 +12,39 @@ main = mainWith myFunction
             [input,output] -> interactWith function input output
             _ -> putStrLn "error: exactly two arguments needed"
                                                   
-myFunction = id --transpose
--}
+myFunction = transpose
+
 
 transpose :: String -> String
-transpose text = unlines (scan (lines text) [])
+transpose text = unlines (scan (removeTrailingNewlines (lines text)) [])
+  where
+    removeTrailingNewlines lines = 
+      case lines of
+        []     -> []
+        (l:[]) -> if null l then [] else [l]
+        (l:ls) -> let ps = removeTrailingNewlines ls
+                   in if null ps && null l
+                      then []
+                      else l:ps
 
-scan lines rows = if noMore lines
-                  then rows
-                  else scan tails (rows ++ [row])
-                  where (row, tails) = getRow lines
-                        noMore [] = True
-                        noMore (l:ls) = if null l 
-                                        then noMore ls
-                                        else False
+    -- Builds a row from the heads of lines, appends it to rows and
+    -- calls itself for tails until there are no more tails
+    scan :: [String] -> [String] -> [String]
+    scan []    rows = rows
+    scan lines rows = let (row, tails) = getRow lines
+                       in scan tails (rows ++ [row])
 
-getRow :: [String] -> (String, [String])
-getRow []           = ("", [])
-getRow (line:lines) = let (h,t) = decapitate line
-                          (hs, ts) = getRow lines
-                       in (h : hs, if null t && null ts
-                                   then []
-                                   else t : ts) 
-  where 
+    -- Given a list of Strings, returns a tuple contaning a String
+    -- formed by their heads and a list of their tails. 
+    -- Any trailing empty tails are trimmed.
+    getRow :: [String] -> (String, [String])
+    getRow []           = ("", [])
+    getRow (line:lines) = let (h,t) = decapitate line
+                              (hs, ts) = getRow lines
+                           in (h : hs, if null t && null ts
+                                       then []
+                                       else t : ts) 
+      where
         decapitate line = if null line 
                           then (' ', "") 
                           else (head line, tail line)
